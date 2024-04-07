@@ -38,7 +38,7 @@ if (navigator.getUserMedia) {
 
 // ---
 
-function showSomedata(given_typed_array, num_row_to_display, label) {
+const showSomedata = (given_typed_array, num_row_to_display, label) => {
 	const size_buffer = given_typed_array.length
 	let index = 0
 
@@ -58,11 +58,11 @@ function showSomedata(given_typed_array, num_row_to_display, label) {
 	}
 }
 
-function processMicrophoneBuffer(event) {
+const processMicrophoneBuffer = (event) => {
 	const microphone_output_buffer = event.inputBuffer.getChannelData(0) // just mono - 1 channel for now
 }
 
-function startMicrophone(stream) {
+const startMicrophone = (stream) => {
 	gainNode = audioContext.createGain()
 	gainNode.connect(audioContext.destination)
 
