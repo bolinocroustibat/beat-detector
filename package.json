@@ -1,22 +1,17 @@
 {
   "name": "js-beat-detector",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bolinocroustibat/beat-detector.git"
+  "devDependencies": {
+    "vite": "^5.2.0"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bolinocroustibat/beat-detector/issues"
-  },
-  "homepage": "https://github.com/bolinocroustibat/beat-detector#readme",
   "dependencies": {
-    "web-audio-beat-detector": "^8.1.27"
+    "web-audio-beat-detector": "^8.2.7"
   }
 }
