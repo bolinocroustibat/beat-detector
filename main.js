@@ -4,7 +4,7 @@ import { guess } from "web-audio-beat-detector"
 
 const webaudio_tooling_obj = (() => {
 	const audioContext = new AudioContext()
-  audioContext.resume()
+	audioContext.resume()
 
 	console.log("audio is starting up ...")
 

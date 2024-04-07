@@ -1,17 +1,18 @@
 {
-  "name": "js-beat-detector",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "vite": "^5.2.0"
-  },
-  "dependencies": {
-    "web-audio-beat-detector": "^8.2.7"
-  }
+	"name": "js-beat-detector",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"devDependencies": {
+		"biome": "^0.3.3",
+		"vite": "^5.2.0"
+	},
+	"dependencies": {
+		"web-audio-beat-detector": "^8.2.7"
+	}
 }
