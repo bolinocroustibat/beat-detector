@@ -1,8 +1,10 @@
-import { analyze } from "web-audio-beat-detector"
-import { guess } from "web-audio-beat-detector"
+// import { analyze } from "web-audio-beat-detector"
+// import { guess } from "web-audio-beat-detector"
 import "./style.css"
 
-const audioContext = new AudioContext()
+const sampleRate = 16000
+
+const audioContext = new AudioContext({ sampleRate: sampleRate })
 audioContext.resume()
 
 console.log("audio is starting up ...")
