@@ -1,128 +1,113 @@
-import "./style.css"
 import { analyze } from "web-audio-beat-detector"
 import { guess } from "web-audio-beat-detector"
+import "./style.css"
 
-const webaudio_tooling_obj = (() => {
-	const audioContext = new AudioContext()
-	audioContext.resume()
+const audioContext = new AudioContext()
+audioContext.resume()
 
-	console.log("audio is starting up ...")
+console.log("audio is starting up ...")
 
-	const BUFF_SIZE_RENDERER = 16384
+const BUFF_SIZE_RENDERER = 16384
 
-	const audioInput = null
-	let microphone_stream = null
-	let gain_node = null
-	let script_processor_node = null
-	let script_processor_analysis_node = null
-	let analyser_node = null
+let microphoneStream = null
+let gainNode = null
+let scriptProcessorNode = null
+let scriptProcessorAnalysisNode = null
+let analyserNode = null
 
-	if (!navigator.getUserMedia)
-		navigator.getUserMedia =
-			navigator.getUserMedia ||
-			navigator.webkitGetUserMedia ||
-			navigator.mozGetUserMedia ||
-			navigator.msGetUserMedia
+if (!navigator.getUserMedia)
+	navigator.getUserMedia =
+		navigator.getUserMedia ||
+		navigator.webkitGetUserMedia ||
+		navigator.mozGetUserMedia ||
+		navigator.msGetUserMedia
 
-	if (navigator.getUserMedia) {
-		navigator.getUserMedia(
-			{ audio: true },
-			(stream) => {
-				start_microphone(stream)
-			},
-			(e) => {
-				alert("Error capturing audio.")
-			},
-		)
+if (navigator.getUserMedia) {
+	navigator.getUserMedia(
+		{ audio: true },
+		(stream) => {
+			startMicrophone(stream)
+		},
+		(e) => {
+			alert("Error capturing audio.")
+		},
+	)
+} else {
+	alert("getUserMedia not supported in this browser.")
+}
+
+// ---
+
+function showSomedata(given_typed_array, num_row_to_display, label) {
+	const size_buffer = given_typed_array.length
+	let index = 0
+
+	console.log(`____${label}______`)
+
+	if (label === "time") {
+		for (; index < num_row_to_display && index < size_buffer; index += 1) {
+			const curr_value_time = given_typed_array[index] / 128 - 1.0
+			console.log(curr_value_time)
+		}
+	} else if (label === "frequency") {
+		for (; index < num_row_to_display && index < size_buffer; index += 1) {
+			console.log(given_typed_array[index])
+		}
 	} else {
-		alert("getUserMedia not supported in this browser.")
+		throw new Error("ERROR - must pass time or frequency")
 	}
+}
 
-	// ---
+function processMicrophoneBuffer(event) {
+	const microphone_output_buffer = event.inputBuffer.getChannelData(0) // just mono - 1 channel for now
+}
 
-	function show_some_data(given_typed_array, num_row_to_display, label) {
-		const size_buffer = given_typed_array.length
-		let index = 0
+function startMicrophone(stream) {
+	gainNode = audioContext.createGain()
+	gainNode.connect(audioContext.destination)
 
-		console.log("__________ " + label)
+	microphoneStream = audioContext.createMediaStreamSource(stream)
+	microphoneStream.connect(gainNode)
 
-		if (label === "time") {
-			for (; index < num_row_to_display && index < size_buffer; index += 1) {
-				var curr_value_time = given_typed_array[index] / 128 - 1.0
-				console.log(curr_value_time)
-			}
-		} else if (label === "frequency") {
-			for (; index < num_row_to_display && index < size_buffer; index += 1) {
-				console.log(given_typed_array[index])
-			}
-		} else {
-			throw new Error("ERROR - must pass time or frequency")
+	scriptProcessorNode = audioContext.createScriptProcessor(
+		BUFF_SIZE_RENDERER,
+		1,
+		1,
+	)
+	scriptProcessorNode.onaudioprocess = processMicrophoneBuffer
+
+	microphoneStream.connect(scriptProcessorNode)
+
+	// --- setup FFT
+
+	scriptProcessorAnalysisNode = audioContext.createScriptProcessor(2048, 1, 1)
+	scriptProcessorAnalysisNode.connect(gainNode)
+
+	analyserNode = audioContext.createAnalyser()
+	analyserNode.smoothingTimeConstant = 0
+	analyserNode.fftSize = 2048
+
+	microphoneStream.connect(analyserNode)
+
+	analyserNode.connect(scriptProcessorAnalysisNode)
+
+	const bufferLength = analyserNode.frequencyBinCount
+
+	const arrayFreqDomain = new Uint8Array(bufferLength)
+	const arrayTimeDomain = new Uint8Array(bufferLength)
+
+	console.log(`buffer length ${bufferLength}`)
+
+	scriptProcessorAnalysisNode.onaudioprocess = () => {
+		console.log("test")
+		// get the average for the first channel
+		analyserNode.getByteFrequencyData(arrayFreqDomain)
+		analyserNode.getByteTimeDomainData(arrayTimeDomain)
+
+		// draw the spectrogram
+		if (microphoneStream.playbackState === microphoneStream.PLAYING_STATE) {
+			showSomedata(arrayFreqDomain, 5, "frequency")
+			showSomedata(arrayTimeDomain, 5, "time") // store this to record to aggregate buffer/file
 		}
 	}
-
-	function process_microphone_buffer(event) {
-		const microphone_output_buffer = event.inputBuffer.getChannelData(0) // just mono - 1 channel for now
-	}
-
-	function start_microphone(stream) {
-		gain_node = audioContext.createGain()
-		gain_node.connect(audioContext.destination)
-
-		microphone_stream = audioContext.createMediaStreamSource(stream)
-		microphone_stream.connect(gain_node)
-
-		script_processor_node = audioContext.createScriptProcessor(
-			BUFF_SIZE_RENDERER,
-			1,
-			1,
-		)
-		script_processor_node.onaudioprocess = process_microphone_buffer
-
-		microphone_stream.connect(script_processor_node)
-
-		// --- enable volume control for output speakers
-
-		document.getElementById("volume").addEventListener("change", function () {
-			var curr_volume = this.value
-			gain_node.gain.value = curr_volume
-
-			console.log("curr_volume ", curr_volume)
-		})
-
-		// --- setup FFT
-
-		script_processor_analysis_node = audioContext.createScriptProcessor(
-			2048,
-			1,
-			1,
-		)
-		script_processor_analysis_node.connect(gain_node)
-
-		analyser_node = audioContext.createAnalyser()
-		analyser_node.smoothingTimeConstant = 0
-		analyser_node.fftSize = 2048
-
-		microphone_stream.connect(analyser_node)
-
-		analyser_node.connect(script_processor_analysis_node)
-
-		var buffer_length = analyser_node.frequencyBinCount
-
-		var array_freq_domain = new Uint8Array(buffer_length)
-		var array_time_domain = new Uint8Array(buffer_length)
-
-		console.log("buffer_length " + buffer_length)
-
-		script_processor_analysis_node.onaudioprocess = function () {
-			// get the average for the first channel
-			analyser_node.getByteFrequencyData(array_freq_domain)
-			analyser_node.getByteTimeDomainData(array_time_domain)
-
-			// draw the spectrogram
-			if (microphone_stream.playbackState == microphone_stream.PLAYING_STATE) {
-				show_some_data(array_freq_domain, 5, "frequency")
-				show_some_data(array_time_domain, 5, "time") // store this to record to aggregate buffer/file
-			}
-		}
-	}
-})() //  webaudio_tooling_obj = function()
+}

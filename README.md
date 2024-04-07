@@ -4,6 +4,7 @@
 npm install
 ```
 
+
 ## Run locally
 
 ```bash
@@ -30,5 +31,5 @@ npm run preview
 
 Lint AND format with:
 ```bash
-pnpx @biomejs/biome check --apply .
+npx @biomejs/biome check --apply .
 ```
