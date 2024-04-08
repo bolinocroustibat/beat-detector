@@ -3,13 +3,12 @@
 import "./style.css"
 
 const sampleRate = 16000
+const buffSideRenderer = 16384
 
 const audioContext = new AudioContext({ sampleRate: sampleRate })
 audioContext.resume()
 
 console.log("audio is starting up ...")
-
-const BUFF_SIZE_RENDERER = 16384
 
 let microphoneStream = null
 let gainNode = null
@@ -26,7 +25,7 @@ if (!navigator.getUserMedia)
 
 if (navigator.getUserMedia) {
 	navigator.getUserMedia(
-		{ audio: true },
+		{ video: false, audio: true },
 		(stream) => {
 			startMicrophone(stream)
 		},
@@ -72,7 +71,7 @@ const startMicrophone = (stream) => {
 	microphoneStream.connect(gainNode)
 
 	scriptProcessorNode = audioContext.createScriptProcessor(
-		BUFF_SIZE_RENDERER,
+		buffSideRenderer,
 		1,
 		1,
 	)
